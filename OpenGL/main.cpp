@@ -39,7 +39,7 @@ void box();
 void triangle(const point4& a, const point4& b, const point4& c, const color4 col);
 
 // variables used in differnt functions
-GLuint shader1, shader2;
+GLuint shader1, shader2, shader3, shader4;
 GLuint vPosition;			// entry point for vertex positions into the vertex shader
 GLuint vNormal;				// entry point for vertex normals into the vertex shader
 GLuint vColor;				// entry point for vertex color into the vertex shader
@@ -65,6 +65,8 @@ Utilities::PNG diffuse;		// data structore for a texture image
 // Model-view and projection matrices uniform location
 GLuint  hModel, hCamera, hProjection, hLightPos;
 GLuint  hModel2, hCamera2, hProjection2;
+GLuint  hModel3, hCamera3, hProjection3;
+GLuint  hModel4, hCamera4, hProjection4;
 GLuint diffuseTexture;
 
 //=======================================================================
@@ -127,19 +129,21 @@ void initDrawing()
 
 	std::string vertexShader = Utilities::loadFile("gouraud.vert");
 	std::string fragmentShader = Utilities::loadFile("gouraud.frag");
-
-	// compile vertex and fragment shader (illumination
 	shader1 = Utilities::compileShader(vertexShader, fragmentShader);
-	// activate shader programs
 	glUseProgram(shader1);
 
-
-	// load vertex and fragment shader for texturing
 	std::string vertexShader2 = Utilities::loadFile("texture.vert");
 	std::string fragmentShader2 = Utilities::loadFile("texture.frag");
-
-	// compile vertex and fragment shader (texturing)
 	shader2 = Utilities::compileShader(vertexShader2, fragmentShader2);
+
+	std::string vertexShader3 = Utilities::loadFile("phong.vert");
+	std::string fragmentShader3 = Utilities::loadFile("phong.frag");
+	shader3 = Utilities::compileShader(vertexShader3, fragmentShader3);
+
+
+	std::string vertexShader4 = Utilities::loadFile("cartoon.vert");
+	std::string fragmentShader4 = Utilities::loadFile("cartoon.frag");
+	shader4 = Utilities::compileShader(vertexShader4, fragmentShader4);
 
 	// =======================================================
 	// Vertex array objects:
@@ -205,12 +209,17 @@ void initDrawing()
 	hCamera = glGetUniformLocation(shader1, "Camera");
 	hProjection = glGetUniformLocation(shader1, "Projection");
 
-
-	// Retrieve  uniform variable locations from shader program
-	// for the modelview and projection matrix for texture shader
 	hModel2 = glGetUniformLocation(shader2, "Model");
 	hCamera2 = glGetUniformLocation(shader2, "Camera");
 	hProjection2 = glGetUniformLocation(shader2, "Projection");
+
+	hModel3 = glGetUniformLocation(shader3, "Model");
+	hCamera3 = glGetUniformLocation(shader3, "Camera");
+	hProjection3 = glGetUniformLocation(shader3, "Projection");
+
+	hModel4 = glGetUniformLocation(shader4, "Model");
+	hCamera4 = glGetUniformLocation(shader4, "Camera");
+	hProjection4 = glGetUniformLocation(shader4, "Projection");
 
 
 }
@@ -286,8 +295,9 @@ void display()
 		glUniformMatrix4fv(hProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	}
 
-	else {
-		glBindTexture(GL_TEXTURE_2D, diffuseTexture);
+	// switch between illumination and texture shader
+	if (g_Shader == 1) {
+		//glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 
 		glUseProgram(shader2);
 		// model transformations if needed
@@ -295,6 +305,26 @@ void display()
 		glUniformMatrix4fv(hModel2, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(hCamera2, 1, GL_FALSE, glm::value_ptr(camera));
 		glUniformMatrix4fv(hProjection2, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	}
+
+	// switch between illumination and texture shader
+	if (g_Shader == 2) {
+		glUseProgram(shader3);
+		// model transformations if needed
+		// set shader parameter if needed (e.g. modelview, projection matrix, light, material)
+		glUniformMatrix4fv(hModel3, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(hCamera3, 1, GL_FALSE, glm::value_ptr(camera));
+		glUniformMatrix4fv(hProjection3, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	}
+
+	// switch between illumination and texture shader
+	if (g_Shader == 3) {
+		glUseProgram(shader4);
+		// model transformations if needed
+		// set shader parameter if needed (e.g. modelview, projection matrix, light, material)
+		glUniformMatrix4fv(hModel4, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(hCamera4, 1, GL_FALSE, glm::value_ptr(camera));
+		glUniformMatrix4fv(hProjection4, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	}
 
 
@@ -325,7 +355,7 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		
 		case 's': // switch between diffent shaders
-			g_Shader = (g_Shader + 1) % 2;
+			g_Shader = (g_Shader + 1) % 4;
 			break;
 
 		case 'm': // switch between diffent materials

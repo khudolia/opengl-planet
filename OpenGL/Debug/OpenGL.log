@@ -1,4 +1,4 @@
 ﻿  main.cpp
-\\WINCL02\users\khudolia\Desktop\opengl-planet\OpenGL\main.cpp(247,45): warning C4305: "Initialisierung": Verkürzung von "double" in "const GLfloat"
-\\WINCL02\users\khudolia\Desktop\opengl-planet\OpenGL\main.cpp(373,28): warning C4305: "=": Verkürzung von "double" in "float"
+\\WINCL02\users\khudolia\Desktop\opengl-planet\OpenGL\main.cpp(255,45): warning C4305: "Initialisierung": Verkürzung von "double" in "const GLfloat"
+\\WINCL02\users\khudolia\Desktop\opengl-planet\OpenGL\main.cpp(402,28): warning C4305: "=": Verkürzung von "double" in "float"
   OpenGL.vcxproj -> \\WINCL02\users\khudolia\Desktop\opengl-planet\Debug\OpenGL.exe
