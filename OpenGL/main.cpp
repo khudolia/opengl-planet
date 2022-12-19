@@ -8,10 +8,12 @@
 // Matrikelnummer:
 //
 //=======================================================================
+#include "stb_image.h"
 #include "Dependencies/glew/glew.h"
 #include "Dependencies/glut/glut.h"
 #include "utilities.h"
 #include <string>
+
 
 // define constant numbers for the box mesh
 const int NumTriangles = 12;				// number faces, 2 triangles each
@@ -153,10 +155,14 @@ void initDrawing()
 	// import image file as texture
 	//=======================================================
 	Utilities::loadPNG("world.png", diffuse);
+	//unsigned char* data = stbi_load("world.png", &width, &height, &nrChannels, 0);
+
 	// transfer texture data to the GPU
 	glGenTextures(1, &diffuseTexture);
 	glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, diffuse.width, diffuse.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &diffuse.colors[0]);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -282,6 +288,7 @@ void display()
 
 	else {
 		glBindTexture(GL_TEXTURE_2D, diffuseTexture);
+
 		glUseProgram(shader2);
 		// model transformations if needed
 		// set shader parameter if needed (e.g. modelview, projection matrix)
@@ -364,13 +371,21 @@ void setLightMaterial()
 		material_specular = color4(0.73, 0.63, 0.63, 0.5);
 		material_shininess = 76.8;
 	}
-	else
-	{
-		// define your own material
-		// material_ambient = color4();
-		// material_diffuse = color4();
-		// material_specular = color4();
-		// material_shininess = <value>;
+
+	if (g_Material == 1) {
+		// here: material ruby
+		material_ambient = color4(1, 1, 1, 0.5);
+		material_diffuse = color4(1, 1, 1, 0.5);
+		material_specular = color4(1, 1, 1, 0.5);
+		material_shininess = 1.0;
+	}
+
+	if (g_Material == 2) {
+		// here: material ruby
+		material_ambient = color4(1, 1, 1, 0.5);
+		material_diffuse = color4(1, 1, 1, 0.5);
+		material_specular = color4(1, 1, 1, 0.5);
+		material_shininess = 100.0;
 	}
 
 
