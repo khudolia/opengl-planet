@@ -1,5 +1,4 @@
 #version 420 core
-out vec4 FragColor;
 
 //
 // name:
@@ -7,13 +6,13 @@ out vec4 FragColor;
 // short description:
 //
 
-uniform sampler2D texture;
+uniform sampler2D bindedTexture;
+in  vec4 fC;	// color value per vertex
 in vec2 TexCoord;
 
-// output from fragment shader => a color for each fragment
-
+out vec4 FragColor;
 
 void main(void)
 {
-	FragColor = texture(texture, TexCoord);
+	FragColor = texture(bindedTexture, TexCoord) * fC;
 }

@@ -14,6 +14,7 @@
 #include "utilities.h"
 #include <string>
 
+using namespace std;
 
 // define constant numbers for the box mesh
 const int NumTriangles = 12;				// number faces, 2 triangles each
@@ -39,7 +40,7 @@ void box();
 void triangle(const point4& a, const point4& b, const point4& c, const color4 col);
 
 // variables used in differnt functions
-GLuint shader1, shader2, shader3, shader4;
+GLuint shader1, shader2;
 GLuint vPosition;			// entry point for vertex positions into the vertex shader
 GLuint vNormal;				// entry point for vertex normals into the vertex shader
 GLuint vColor;				// entry point for vertex color into the vertex shader
@@ -63,10 +64,8 @@ Utilities::OBJ obj;			// data structure for geometry (sphere)
 Utilities::PNG diffuse;		// data structore for a texture image
 
 // Model-view and projection matrices uniform location
-GLuint  hModel, hCamera, hProjection, hLightPos;
+GLuint  hModel, hCamera, hProjection, hLightPos, hLightPos1;
 GLuint  hModel2, hCamera2, hProjection2;
-GLuint  hModel3, hCamera3, hProjection3;
-GLuint  hModel4, hCamera4, hProjection4;
 GLuint diffuseTexture;
 
 //=======================================================================
@@ -127,23 +126,14 @@ void initDrawing()
 	// load and compile shader program
 	// vertex and fragment shsader
 
-	std::string vertexShader = Utilities::loadFile("gouraud.vert");
-	std::string fragmentShader = Utilities::loadFile("gouraud.frag");
+	std::string vertexShader = Utilities::loadFile("phong.vert");
+	std::string fragmentShader = Utilities::loadFile("phong.frag");
 	shader1 = Utilities::compileShader(vertexShader, fragmentShader);
 	glUseProgram(shader1);
 
 	std::string vertexShader2 = Utilities::loadFile("texture.vert");
 	std::string fragmentShader2 = Utilities::loadFile("texture.frag");
 	shader2 = Utilities::compileShader(vertexShader2, fragmentShader2);
-
-	std::string vertexShader3 = Utilities::loadFile("phong.vert");
-	std::string fragmentShader3 = Utilities::loadFile("phong.frag");
-	shader3 = Utilities::compileShader(vertexShader3, fragmentShader3);
-
-
-	std::string vertexShader4 = Utilities::loadFile("cartoon.vert");
-	std::string fragmentShader4 = Utilities::loadFile("cartoon.frag");
-	shader4 = Utilities::compileShader(vertexShader4, fragmentShader4);
 
 	// =======================================================
 	// Vertex array objects:
@@ -159,7 +149,6 @@ void initDrawing()
 	// import image file as texture
 	//=======================================================
 	Utilities::loadPNG("world.png", diffuse);
-	//unsigned char* data = stbi_load("world.png", &width, &height, &nrChannels, 0);
 
 	// transfer texture data to the GPU
 	glGenTextures(1, &diffuseTexture);
@@ -212,16 +201,6 @@ void initDrawing()
 	hModel2 = glGetUniformLocation(shader2, "Model");
 	hCamera2 = glGetUniformLocation(shader2, "Camera");
 	hProjection2 = glGetUniformLocation(shader2, "Projection");
-
-	hModel3 = glGetUniformLocation(shader3, "Model");
-	hCamera3 = glGetUniformLocation(shader3, "Camera");
-	hProjection3 = glGetUniformLocation(shader3, "Projection");
-
-	hModel4 = glGetUniformLocation(shader4, "Model");
-	hCamera4 = glGetUniformLocation(shader4, "Camera");
-	hProjection4 = glGetUniformLocation(shader4, "Projection");
-
-
 }
 
 //=======================================================================
@@ -293,10 +272,7 @@ void display()
 		glUniformMatrix4fv(hModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(hCamera, 1, GL_FALSE, glm::value_ptr(camera));
 		glUniformMatrix4fv(hProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	}
-
-	// switch between illumination and texture shader
-	if (g_Shader == 1) {
+	} else {
 		//glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 
 		glUseProgram(shader2);
@@ -306,27 +282,6 @@ void display()
 		glUniformMatrix4fv(hCamera2, 1, GL_FALSE, glm::value_ptr(camera));
 		glUniformMatrix4fv(hProjection2, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	}
-
-	// switch between illumination and texture shader
-	if (g_Shader == 2) {
-		glUseProgram(shader3);
-		// model transformations if needed
-		// set shader parameter if needed (e.g. modelview, projection matrix, light, material)
-		glUniformMatrix4fv(hModel3, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(hCamera3, 1, GL_FALSE, glm::value_ptr(camera));
-		glUniformMatrix4fv(hProjection3, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	}
-
-	// switch between illumination and texture shader
-	if (g_Shader == 3) {
-		glUseProgram(shader4);
-		// model transformations if needed
-		// set shader parameter if needed (e.g. modelview, projection matrix, light, material)
-		glUniformMatrix4fv(hModel4, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(hCamera4, 1, GL_FALSE, glm::value_ptr(camera));
-		glUniformMatrix4fv(hProjection4, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	}
-
 
 	// activate object rendering - object to render will be controlled by the corresponding
 	// VertexArrayObject; shader to use will be controlled by the shader program variable
@@ -355,7 +310,8 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		
 		case 's': // switch between diffent shaders
-			g_Shader = (g_Shader + 1) % 4;
+			g_Shader = (g_Shader + 1) % 2;
+
 			break;
 
 		case 'm': // switch between diffent materials
@@ -366,6 +322,8 @@ void keyboard(unsigned char key, int x, int y)
 			exit(EXIT_SUCCESS);
 			break;
 	}
+
+	cout << "The Value of 'num' is " << g_Shader;
 
 	// enforce redrawing of the scene
 	glutPostRedisplay();
@@ -396,11 +354,12 @@ void setLightMaterial()
 
 	if (g_Material == 0) {
 		// here: material ruby
-		material_ambient = color4(0.17, 0.01, 0.01, 0.5);
-		material_diffuse = color4(0.61, 0.04, 0.04, 0.5);
-		material_specular = color4(0.73, 0.63, 0.63, 0.5);
-		material_shininess = 76.8;
+		material_ambient = color4(1, 1, 1, 0.5);
+		material_diffuse = color4(1, 1, 1, 0.5);
+		material_specular = color4(1, 1, 1, 0.5);
+		material_shininess = 100.0;
 	}
+
 
 	if (g_Material == 1) {
 		// here: material ruby
@@ -410,12 +369,13 @@ void setLightMaterial()
 		material_shininess = 1.0;
 	}
 
+
 	if (g_Material == 2) {
 		// here: material ruby
-		material_ambient = color4(1, 1, 1, 0.5);
-		material_diffuse = color4(1, 1, 1, 0.5);
-		material_specular = color4(1, 1, 1, 0.5);
-		material_shininess = 100.0;
+		material_ambient = color4(0.17, 0.01, 0.01, 0.5);
+		material_diffuse = color4(0.61, 0.04, 0.04, 0.5);
+		material_specular = color4(0.73, 0.63, 0.63, 0.5);
+		material_shininess = 76.8;
 	}
 
 
@@ -440,6 +400,21 @@ void setLightMaterial()
 	hLightPos = glGetUniformLocation(shader1, "LightPosition");
 	glUniform4fv(hLightPos, 1, glm::value_ptr(light_position));
 
+
+	// set reflection values in the shader for usage of the final color calculation
+	// based on a local illumination model (like Phong or Blinn-Phong)
+	glUniform4fv(glGetUniformLocation(shader2, "AmbientProduct"),
+		1, glm::value_ptr(ambient_product));
+	glUniform4fv(glGetUniformLocation(shader2, "DiffuseProduct"),
+		1, glm::value_ptr(diffuse_product));
+	glUniform4fv(glGetUniformLocation(shader2, "SpecularProduct"),
+		1, glm::value_ptr(specular_product));
+	glUniform1f(glGetUniformLocation(shader2, "Shininess"),
+		material_shininess);
+
+	// set light position in the vertex shader to calculate the light vector
+	hLightPos1 = glGetUniformLocation(shader2, "LightPosition");
+	glUniform4fv(hLightPos1, 1, glm::value_ptr(light_position));
 }
 
 
